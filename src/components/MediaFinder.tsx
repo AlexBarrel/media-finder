@@ -18,7 +18,6 @@ export default function MediaFinder() {
 
   useEffect(() => {
     const handleSearch = async () => {
-      // Для фильмов: если строка пустая — очищаем результаты
       if (activeTab === 'movies' && !query.trim()) {
         setMovies([]);
         return;
@@ -31,7 +30,6 @@ export default function MediaFinder() {
           const result = await fetchMovies(query);
           setMovies(result);
         } else {
-          // Для игр: запрашиваем в любом случае (если query пустой — fetchGames вернет ТОП)
           const result = await fetchGames(query);
           setGames(result);
         }
@@ -115,7 +113,7 @@ export default function MediaFinder() {
           </div>
         </header>
 
-        {/* Компактный блок поиска */}
+        {/* Поиск */}
         <section className="py-8 text-center max-w-2xl mx-auto space-y-3">
           <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
             Find your next{' '}
@@ -153,7 +151,7 @@ export default function MediaFinder() {
           </div>
         )}
 
-        {/* Подзаголовок для игр, если поиск пустой */}
+        {/* Подзаголовок для игр */}
         {!loading && activeTab === 'games' && !query.trim() && hasResults && (
           <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-4 px-1 flex items-center gap-2">
             <span>🔥 Top Rated Games</span>
@@ -161,7 +159,7 @@ export default function MediaFinder() {
           </div>
         )}
 
-        {/* Сетка результатов фильмов */}
+        {/* Сетка результатов фильмов (с плашкой рейтинга ★ IMDb и года) */}
         {!loading && activeTab === 'movies' && hasResults && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 animate-fade-in">
             {movies.map((movie) => (
@@ -179,16 +177,18 @@ export default function MediaFinder() {
                     }}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
                   />
-                  <div className="absolute top-3 right-3 bg-neutral-950/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] font-black tracking-wider text-amber-400 border border-amber-400/20">
+                  {/* Год слева сверху */}
+                  <div className="absolute top-3 left-3 bg-neutral-950/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] font-black tracking-wider text-neutral-300 border border-neutral-800">
                     {movie.year}
+                  </div>
+                  {/* Рейтинг справа сверху */}
+                  <div className="absolute top-3 right-3 bg-neutral-950/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] font-black tracking-wider text-amber-400 border border-amber-400/20 flex items-center gap-1">
+                    ★ {movie.rating || 'N/A'}
                   </div>
                 </div>
 
-                <div className="p-3 bg-neutral-900 border-t border-neutral-800/50">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-violet-400">
-                    MOVIE
-                  </span>
-                  <h3 className="font-bold text-white text-xs mt-1 line-clamp-1 group-hover:text-violet-300 transition-colors">
+                <div className="p-3 bg-neutral-900 border-t border-neutral-800/50 flex items-center min-h-[3.25rem]">
+                  <h3 className="font-bold text-white text-xs leading-snug line-clamp-2 group-hover:text-violet-300 transition-colors">
                     {movie.title}
                   </h3>
                 </div>
@@ -197,32 +197,38 @@ export default function MediaFinder() {
           </div>
         )}
 
-        {/* Сетка результатов игр */}
+        {/* Сетка результатов игр (полная визуальная идентичность с фильмами) */}
         {!loading && activeTab === 'games' && hasResults && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fade-in">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 animate-fade-in">
             {games.map((game) => (
               <div
                 key={game.id}
                 onClick={() => handleCardClick(game.id)}
-                className="group relative bg-neutral-900 rounded-2xl overflow-hidden cursor-pointer border border-neutral-800/80 hover:border-rose-500/60 transition-all duration-300 hover:-translate-y-2 shadow-2xl flex flex-col"
+                className="group relative bg-neutral-900 rounded-2xl overflow-hidden cursor-pointer border border-neutral-800/80 hover:border-rose-500/60 transition-all duration-300 hover:-translate-y-2 shadow-2xl flex flex-col justify-between"
               >
-                <div className="aspect-[16/10] overflow-hidden bg-neutral-950 relative">
+                <div className="aspect-square overflow-hidden bg-neutral-950 relative">
                   <img
                     src={game.poster}
                     alt={game.title}
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://placehold.co/300x450/1e293b/e2e8f0?text=No+Image';
+                      (e.target as HTMLImageElement).src = 'https://placehold.co/300x300/1e293b/e2e8f0?text=No+Image';
                     }}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
                   />
-                  <div className="absolute top-3 right-3 bg-neutral-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg text-xs font-black text-rose-400 border border-rose-500/20 flex items-center gap-1">
+                  {/* Год слева сверху (точно как у фильмов) */}
+                  <div className="absolute top-3 left-3 bg-neutral-950/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] font-black tracking-wider text-neutral-300 border border-neutral-800">
+                    {(game as any).year || 'N/A'}
+                  </div>
+                  {/* Рейтинг справа сверху (точно стиль фильмов, но в розовой гамме игр) */}
+                  <div className="absolute top-3 right-3 bg-neutral-950/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] font-black tracking-wider text-rose-400 border border-rose-500/20 flex items-center gap-1">
                     ★ {game.rating}
                   </div>
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <h3 className="font-bold text-white text-base line-clamp-1 group-hover:text-rose-300 transition-colors">
-                      {game.title}
-                    </h3>
-                  </div>
+                </div>
+
+                <div className="p-3 bg-neutral-900 border-t border-neutral-800/50 flex items-center min-h-[3.25rem]">
+                  <h3 className="font-bold text-white text-xs leading-snug line-clamp-2 group-hover:text-rose-400 transition-colors">
+                    {game.title}
+                  </h3>
                 </div>
               </div>
             ))}
@@ -245,6 +251,7 @@ export default function MediaFinder() {
               <div className="p-20 text-center text-xs font-bold uppercase tracking-widest text-neutral-500">Loading details...</div>
             ) : (
               <div className="overflow-y-auto">
+                {/* Фильмы */}
                 {selectedMovie && (
                   <div>
                     <div className="relative h-64 sm:h-80 overflow-hidden bg-neutral-950">
@@ -271,17 +278,25 @@ export default function MediaFinder() {
                   </div>
                 )}
 
+                {/* Игры (дизайн полностью синхронизирован с фильмами) */}
                 {selectedGame && (
                   <div>
                     <div className="relative h-64 sm:h-80 overflow-hidden bg-neutral-950">
-                      <img src={selectedGame.poster} alt={selectedGame.title} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/30 to-transparent" />
-                      <div className="absolute bottom-6 left-6 right-6">
-                        <span className="text-[10px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-lg">
-                          ★ RAWG {selectedGame.rating} / 5
-                        </span>
-                        <h2 className="text-2xl sm:text-3xl font-black text-white mt-2 leading-tight">{selectedGame.title}</h2>
-                        <p className="text-xs text-neutral-400 mt-1">Released: {selectedGame.released}</p>
+                      <img src={selectedGame.poster} alt={selectedGame.title} className="w-full h-full object-cover opacity-40 blur-sm scale-105" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/40 to-transparent" />
+                      <div className="absolute bottom-6 left-6 right-6 flex items-end gap-5">
+                        <img src={selectedGame.poster} alt={selectedGame.title} className="w-28 sm:w-32 aspect-square object-cover rounded-2xl border-2 border-neutral-800 shadow-2xl shrink-0" />
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-lg">
+                            ★ RAWG {selectedGame.rating} / 5
+                          </span>
+                          <h2 className="text-2xl sm:text-3xl font-black text-white mt-2 leading-tight">{selectedGame.title}</h2>
+                          <p className="text-xs text-neutral-400 mt-1">
+                            Released: {selectedGame.released && selectedGame.released !== 'N/A' 
+                              ? selectedGame.released.split('-').reverse().join('.') 
+                              : 'N/A'}
+                          </p>
+                        </div>
                       </div>
                     </div>
                     <div className="p-6 space-y-4">
@@ -293,7 +308,10 @@ export default function MediaFinder() {
                       {selectedGame.platforms.length > 0 && (
                         <div className="text-xs text-neutral-400"><strong className="text-white">Platforms:</strong> {selectedGame.platforms.join(', ')}</div>
                       )}
-                      <p className="text-sm text-neutral-300 leading-relaxed whitespace-pre-line">{selectedGame.description || 'No detailed description available.'}</p>
+                      <div>
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">Overview</h4>
+                        <p className="text-sm text-neutral-300 leading-relaxed whitespace-pre-line">{selectedGame.description || 'No detailed description available.'}</p>
+                      </div>
                     </div>
                   </div>
                 )}

@@ -15,9 +15,10 @@ export interface Movie {
 export interface Game {
   id: number;
   title: string;
+  year: string;
   released: string;
   poster: string;
-  rating: number;
+  rating: string | number;
   genres: string[];
   platforms: string[];
   description?: string;
